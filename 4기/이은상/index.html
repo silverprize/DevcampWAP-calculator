@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>계산기</title>
+  <style>
+    #input {
+      font-size: 20px;
+      width: 300px;
+    }
+    #result {
+      max-width: 300px;
+    }
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .button-container {
+      padding: 5px;
+    }
+    .button {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="result">0</div>
+    <input type="number" name="input" id="input" value="" autofocus autocomplete="off">
+    <div class="button-container">
+      <button type="button" data-op="+" class="button operator" id="add">+</button>
+      <button type="button" data-op="-" class="button operator" id="subtract">-</button>
+      <button type="button" class="button" id="calc">=</button>
+      <button type="button" class="button" id="clear">C</button>
+    </div>
+  </div>
+  <script>
+    var input = document.getElementById('input');
+    var logger = [];
+    var result = 0;
+    var prevResult = null;
+    var enabledOperator = null;
+    var isOperandReady = false;
+
+    input.addEventListener('keyup', function () {
+      isOperandReady = this.dataset.prevValue !== this.value;
+      this.dataset.prevValue = this.value;
+    });
+
+    document.querySelectorAll('.operator').forEach(function (element) {
+      element.addEventListener('click', function () {
+        var value = parseFloat(input.value) || 0;
+        if (isOperandReady) {
+          if (enabledOperator === '+') {
+            result += value
+          } else if (enabledOperator === '-') {
+            result -= value
+          } else {
+            result = value;
+          }
+
+          if (enabledOperator) {
+            logger.push(enabledOperator);
+          }
+          logger.push(value);
+        }
+
+        prevResult = result;
+        isOperandReady = false;
+        enabledOperator = this.dataset.op;
+
+        input.select();
+        print();
+      });
+    });
+
+    document.getElementById('calc').addEventListener('click', function () {
+      var val = isOperandReady ? parseFloat(input.value) || 0 : prevResult;
+
+      if (enabledOperator === '+') {
+        result += val;
+      } else if (enabledOperator === '-') {
+        result -= val;
+      } else {
+        result = val;
+      }
+
+      if (enabledOperator) {
+        logger.push(enabledOperator, val);
+      }
+
+      prevResult = val;
+      isOperandReady = false;
+      input.select();
+      print();
+    });
+
+    document.getElementById('clear').addEventListener('click', function () {
+      enabledOperator = null;
+      result = 0;
+      input.value = '';
+      input.focus();
+      logger.length = 0;
+      print();
+    });
+
+    function print() {
+      document.getElementById('result').textContent = logger.join(' ') + ' = ' + result;
+    }
+  </script>
+</body>
+</html>
